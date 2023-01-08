@@ -1,35 +1,41 @@
+import javax.swing.*;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class Filter implements Runnable{
+
+    public static final int FILTER_AND = 0;
+    public static final int FILTER_OR = 1;
 
     private static final int STATUS_READY = 0;
     private static final int STATUS_PARSING = 1;
     private static final int STATUS_CHANGE = 2;
 
     public interface ParseListener {
-        public void onParseCompleted(ArrayList<String> list);
+        public void onParseCompleted(TableRecord tableRecord);
     }
     Object FILTER_LOCK;
-    ArrayList<String> list;
-    ArrayList<String> filterList;
+    TableRecord tableRecord;
+    TableRecord filterTableRecord;
+    ArrayList<JTextField> filterTextFieldList;
+    private int filterType;
     private int status;
-    private String filterString;
-
     ParseListener listener;
     Thread filterThread;
-    public Filter(ArrayList<String> list, ParseListener listener){
-        this.list = list;
+    public Filter(TableRecord tableRecord, ArrayList<JTextField> filterTextFieldList, ParseListener listener){
+        this.tableRecord = tableRecord;
+        this.filterTextFieldList = filterTextFieldList;
         this.listener = listener;
-        filterList = new ArrayList<>();
+        filterTableRecord = new TableRecord();
+
         FILTER_LOCK = new Object();
+        filterType = FILTER_OR;
         status = STATUS_READY;
-        filterString = "";
         filterThread = new Thread(this);
         filterThread.start();
     }
 
-    public void setFilter(String filterString){
-        this.filterString = filterString.toLowerCase();
+    public void startFilter(){
         status = STATUS_CHANGE;
         runFilter();
     }
@@ -49,6 +55,15 @@ public class Filter implements Runnable{
             FILTER_LOCK.notify();
         }
     }
+
+    public boolean noFilterExist(){
+        boolean exist = true;
+        for(JTextField jTextField : filterTextFieldList){
+            if (jTextField.getText().length() != 0)
+                return false;
+        }
+        return exist;
+    }
     @Override
     public void run() {
         try {
@@ -61,17 +76,17 @@ public class Filter implements Runnable{
 
                     status = STATUS_PARSING;
 
-                    filterList.clear();
+                    filterTableRecord.clear();
                     L.d("Parsing");
 
-                    if (filterString.length() == 0){
-                        L.d("No filter String");
-                        listener.onParseCompleted(list);
+                    if (noFilterExist()){
+                        L.d("No filter exist");
+                        listener.onParseCompleted(tableRecord);
                         status = STATUS_READY;
                         continue;
                     }
 
-                    int nRowCount = list.size();
+                    int nRowCount = tableRecord.getSize();
                     for(int nIndex = 0; nIndex < nRowCount; nIndex++)
                     {
                         if(nIndex % 10000 == 0)
@@ -81,14 +96,28 @@ public class Filter implements Runnable{
                             L.d("Change.. break");
                             break;
                         }
-                        String row = list.get(nIndex);
-                        if (row.toLowerCase().contains(filterString))
-                            filterList.add(row);
+                        boolean toAdd = true;
+
+                        TableRow tableRow = tableRecord.getTableRow(nIndex);
+                        for(int fIndex = 0; fIndex < filterTextFieldList.size(); fIndex++){
+                            if (filterType == FILTER_AND && toAdd == false)
+                                break;
+                            String filterString = filterTextFieldList.get(fIndex).getText().toString().toLowerCase();
+                            if (filterString.length() == 0) continue;
+                            if (tableRow.getTableDataByIndex(fIndex).getValue().toString().toLowerCase().contains(filterString)){
+                                if (filterType != FILTER_AND)
+                                    filterTableRecord.addTableRow(tableRow);
+                            }else {
+                                toAdd = false;
+                            }
+                        }
+                        if (filterType == FILTER_AND && toAdd)
+                            filterTableRecord.addTableRow(tableRow);
                     }
                     if(status == STATUS_PARSING)
                     {
-                        L.d("Parse Complete");
-                        listener.onParseCompleted(filterList);
+                        L.d("Parse Complete, filter size = " + filterTableRecord.getSize());
+                        listener.onParseCompleted(filterTableRecord);
                         status = STATUS_READY;
                     }
                 }

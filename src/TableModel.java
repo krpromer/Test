@@ -4,33 +4,28 @@ import java.util.ArrayList;
 
 public class TableModel extends AbstractTableModel {
 
-    ArrayList<String> list;
+    TableRecord tableRecord;
 
-    public TableModel(ArrayList<String> list){
-        this.list = list;
+    public TableModel(TableRecord tableRecord){
+        this.tableRecord = tableRecord;
     }
 
-    public void setList(ArrayList<String> list) {
-        this.list = list;
+    public void setList(TableRecord tableRecord){
+        this.tableRecord = tableRecord;
     }
 
     @Override
     public int getRowCount() {
-        return list.size();
+        return tableRecord.getSize();
     }
 
     @Override
     public int getColumnCount() {
-        return 1;
+        return tableRecord.getColumnSize();
     }
 
     @Override
     public Object getValueAt(int row, int col) {
-        return list.get(row);
-    }
-
-    @Override
-    public String getColumnName(int column) {
-        return "TestColumn";
+        return tableRecord.getTableRow(row).getTableDataByIndex(col).getValue();
     }
 }
