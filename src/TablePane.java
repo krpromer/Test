@@ -1,4 +1,6 @@
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableColumnModel;
@@ -41,11 +43,32 @@ public class TablePane extends JPanel implements DocumentListener {
             public void setView(Component view) {
                 L.d();
                 JPanel pane = new JPanel(new BorderLayout());
-                pane.add(jTable.getTableHeader(), BorderLayout.NORTH);
+                JTextField highliter = new JTextField();
+                TitledBorder border = BorderFactory.createTitledBorder("Highlighter");
+                border.setTitlePosition(TitledBorder.TOP);
+                highliter.setBorder(border);
+                pane.add(highliter, BorderLayout.NORTH);
+                pane.add(jTable.getTableHeader(), BorderLayout.CENTER);
                 JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
                 for(JTextField jTextField : filterTextFieldList)
                     panel.add(jTextField);
-                pane.add(panel, BorderLayout.CENTER);
+
+                //pane.add(panel, BorderLayout.SOUTH);
+//                JPanel utilPane = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+                JPanel utilPane = new JPanel();
+
+                JCheckBox box = new JCheckBox("Mark Only");
+               // box.setVerticalTextPosition(SwingConstants.TOP);
+                utilPane.add(box);
+                JSeparator js = new JSeparator();
+                js.setOrientation(JSeparator.VERTICAL);
+                Dimension d = js.getPreferredSize();
+                d.height = box.getPreferredSize().height;
+                js.setPreferredSize(d);
+
+                utilPane.add(js);
+                utilPane.add(new JTextField("test"));
+                pane.add(utilPane, BorderLayout.SOUTH);
                 super.setView(pane);
             }
         });
