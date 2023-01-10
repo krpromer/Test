@@ -29,8 +29,32 @@ public class MainFrame extends JFrame {
                 }
             }
         });
+        JMenuItem jim2 = new JMenuItem("Filter file");
+        jim2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                String select =
+                        (String) JOptionPane.showInputDialog(null, "Extension", "Filter File Extension",
+                                JOptionPane.PLAIN_MESSAGE, null, (Object[])null, (Object) null);
+
+            }
+        });
+
+        JMenuItem jim3 = new JMenuItem("Unzip file");
+        jim3.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                String select =
+                        (String) JOptionPane.showInputDialog(null, "Extension", "Filter File Extension",
+                                JOptionPane.PLAIN_MESSAGE, null, (Object[])null, (Object) null);
+
+            }
+        });
+
 
         ji.add(jim);
+        ji.add(jim2);
+        ji.add(jim3);
         menuBar.add(ji);
         setJMenuBar(menuBar);
 //        String frame = (String) JOptionPane.showInputDialog(this, "Input frame number", "Go To Line", JOptionPane.PLAIN_MESSAGE, null, (Object[])null, (Object) null);

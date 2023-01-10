@@ -33,8 +33,6 @@ public class TableModel extends AbstractTableModel {
     // if autoRowSorter enable -> need to set class to sort
     @Override
     public Class<?> getColumnClass(int columnIndex) {
-        if (columnIndex == 0)
-            return Integer.class;
-        return super.getColumnClass(columnIndex);
+        return F.getClass(tableRecord.getTableRow(0).getTableDataByIndex(columnIndex).getField());
     }
 }
