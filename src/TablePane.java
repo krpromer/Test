@@ -107,6 +107,7 @@ public class TablePane extends JPanel implements DocumentListener {
             tableModel.setList(tableRecord);
             tableModel.fireTableDataChanged();
             jTable.changeSelection(0, 0, false, false);
+
         }
     };
 
