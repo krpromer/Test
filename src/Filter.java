@@ -4,9 +4,12 @@ import java.util.ArrayList;
 
 public class Filter implements Runnable{
 
-    public static final int FILTER_AND = 0;
-    public static final int FILTER_OR = 1;
 
+    public static final Object FILTER_AND = "AND";
+    public static final Object FILTER_OR = "OR";
+
+    public static Object filterOption = FILTER_OR;
+    public static final Object[] filterOptions = {FILTER_AND, FILTER_OR};
     private static final int STATUS_READY = 0;
     private static final int STATUS_PARSING = 1;
     private static final int STATUS_CHANGE = 2;
@@ -18,7 +21,7 @@ public class Filter implements Runnable{
     TableRecord tableRecord;
     TableRecord filterTableRecord;
     ArrayList<JTextField> filterTextFieldList;
-    private int filterType;
+ //   private int filterType;
     private int status;
     ParseListener listener;
     Thread filterThread;
@@ -29,7 +32,7 @@ public class Filter implements Runnable{
         filterTableRecord = new TableRecord();
 
         FILTER_LOCK = new Object();
-        filterType = FILTER_OR;
+        //filterType = FILTER_OR;
         status = STATUS_READY;
         filterThread = new Thread(this);
         filterThread.start();
@@ -39,6 +42,7 @@ public class Filter implements Runnable{
         status = STATUS_CHANGE;
         runFilter();
     }
+
     void runFilter()
     {
         while(status == STATUS_PARSING)
@@ -100,18 +104,21 @@ public class Filter implements Runnable{
 
                         TableRow tableRow = tableRecord.getTableRow(nIndex);
                         for(int fIndex = 0; fIndex < filterTextFieldList.size(); fIndex++){
-                            if (filterType == FILTER_AND && toAdd == false)
+                            //if (filterType == FILTER_AND && toAdd == false)
+                            if (filterOption.equals(FILTER_AND) && toAdd == false)
                                 break;
                             String filterString = filterTextFieldList.get(fIndex).getText().toString().toLowerCase();
                             if (filterString.length() == 0) continue;
                             if (tableRow.getTableDataByIndex(fIndex).getValue().toString().toLowerCase().contains(filterString)){
-                                if (filterType != FILTER_AND)
+                                //if (filterType != FILTER_AND)
+                                if (!filterOption.equals(FILTER_AND))
                                     filterTableRecord.addTableRow(tableRow);
                             }else {
                                 toAdd = false;
                             }
                         }
-                        if (filterType == FILTER_AND && toAdd)
+                        //if (filterType == FILTER_AND && toAdd)
+                        if (filterOption.equals(FILTER_AND) && toAdd)
                             filterTableRecord.addTableRow(tableRow);
                     }
                     if(status == STATUS_PARSING)

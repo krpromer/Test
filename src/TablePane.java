@@ -3,6 +3,7 @@ import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -34,6 +35,9 @@ public class TablePane extends JPanel implements DocumentListener {
         setColumns();
         jTable.setModel(tableModel);
         jTable.setColumnModel(tableColumnModel);
+        jTable.setAutoCreateRowSorter(true);
+        ((DefaultTableCellRenderer)jTable.getDefaultRenderer(Integer.class)).setHorizontalAlignment( JLabel.LEFT );
+
         filterTextFieldList = new ArrayList<>();
         setFilterTextField();
         filter = new Filter(tableRecord, filterTextFieldList, listener);
@@ -53,8 +57,7 @@ public class TablePane extends JPanel implements DocumentListener {
                 for(JTextField jTextField : filterTextFieldList)
                     panel.add(jTextField);
 
-                //pane.add(panel, BorderLayout.SOUTH);
-//                JPanel utilPane = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+                pane.add(panel, BorderLayout.SOUTH);
                 JPanel utilPane = new JPanel();
 
                 JCheckBox box = new JCheckBox("Mark Only");
@@ -68,7 +71,7 @@ public class TablePane extends JPanel implements DocumentListener {
 
                 utilPane.add(js);
                 utilPane.add(new JTextField("test"));
-                pane.add(utilPane, BorderLayout.SOUTH);
+                //pane.add(utilPane, BorderLayout.SOUTH);
                 super.setView(pane);
             }
         });
@@ -99,12 +102,17 @@ public class TablePane extends JPanel implements DocumentListener {
     Filter.ParseListener listener = new Filter.ParseListener() {
         @Override
         public void onParseCompleted(TableRecord tableRecord) {
-            invalidate();
+            //filter sorter combi
+            jTable.getRowSorter().allRowsChanged();
             tableModel.setList(tableRecord);
-            repaint();
+            tableModel.fireTableDataChanged();
             jTable.changeSelection(0, 0, false, false);
         }
     };
+
+    public void startFilter(){
+        filter.startFilter();
+    }
 
     // For filterTextField
     @Override

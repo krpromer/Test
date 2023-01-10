@@ -28,4 +28,13 @@ public class TableModel extends AbstractTableModel {
     public Object getValueAt(int row, int col) {
         return tableRecord.getTableRow(row).getTableDataByIndex(col).getValue();
     }
+
+
+    // if autoRowSorter enable -> need to set class to sort
+    @Override
+    public Class<?> getColumnClass(int columnIndex) {
+        if (columnIndex == 0)
+            return Integer.class;
+        return super.getColumnClass(columnIndex);
+    }
 }
