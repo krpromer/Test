@@ -1,41 +1,4 @@
 
-
-Stack Overflow
-Products
-Delayed response to JTable row selection event under a huge data load
-Asked 9 years, 6 months ago
-Modified 9 years, 6 months ago
-Viewed 3k times
-
-5
-
-
-I have a Swing JTable dynamically updated with a big amount of data—new rows are live added constantly, and some 1000-2000 rows can be added during a few minutes. I have registered a Listener to reponse for use's single row selection event to perform some staff. I have used Observer pattern for Swing data binding and table's model is backed by a WritableList implementation. So new items are added to the table from its own Realm. And Listener was added from the SWT UI thread. The problem is, that when new rows are added to table, it doesn't respond at once on user row selection event. Only when stop updating table model, table will respond on user selection- some times with delay more then 30-60 seconds. Please, help me undersand why my table model doesn't respond at once to user selection when intensively updated, and how to overcome this limitation. Any suggestions will be appreciated.
-
-javaswing
-Share
-Follow
-edited Jun 29, 2013 at 20:10
-trashgod's user avatar
-trashgod
-202k2929 gold badges242242 silver badges10231023 bronze badges
-asked Jun 29, 2013 at 19:08
-kioria's user avatar
-kioria
-5311 silver badge55 bronze badges
-Add a comment
-1 Answer
-Sorted by:
-
-Highest score (default)
-
-12
-
-
-Use SwingWorker to publish() your rows in the background and update the TableModel in your implementation of process(). SwingWorker will limit updates to a sustainable rate. Profile to ensure that you are not blocking the event dispatch thread.
-
-Addendum: The GUI remains responsive with this 1,000,000-row variation, as tested. When profiling, note that each click of the "Go" button starts a new worker.
-
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.EventQueue;
