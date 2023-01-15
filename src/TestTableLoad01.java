@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -18,7 +19,6 @@ import javax.swing.SwingWorker;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 
-/** @see https://stackoverflow.com/a/17415635/230513 */
 public class TestTableLoad01 {
 
     public static void main(String[] args) {
@@ -26,11 +26,15 @@ public class TestTableLoad01 {
     }
 
     public TestTableLoad01() {
+        JTable table;
+        TableSwingWorker worker;
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
                 final MyTableModel model = new MyTableModel();
+                final MyTableModel model2 = new MyTableModel();
                 JTable table = new JTable(model);
+                JTable table2 = new JTable(model);
                 table.setDefaultRenderer(Date.class, new TimeCellRenderer());
 
                 JFrame frame = new JFrame("Testing");
@@ -43,12 +47,26 @@ public class TestTableLoad01 {
                 frame.add(new JButton(new AbstractAction("Go") {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        TableSwingWorker worker = new TableSwingWorker(model);
+                        ArrayList<RowData> datas = new ArrayList<>();
+                        for (int index = 0; index < 10000000; index++) {
+                            datas.add(new RowData(index));
+                        }
+
+                        TableSwingWorker worker = new TableSwingWorker(table, model, datas, new TableSwingWorker.Listener() {
+                            @Override
+                            public void onCompleted() {
+                                L.d("completed");
+                            }
+                        });
                         worker.execute();
+                        //TableSwingWorker worker2 = new TableSwingWorker(model2,  "two");
+                        //worker2.execute();
                     }
                 }), BorderLayout.SOUTH);
             }
         });
+
+
     }
 
     public class TimeCellRenderer extends DefaultTableCellRenderer {
@@ -108,7 +126,7 @@ public class TestTableLoad01 {
         @Override
         public Object getValueAt(int row, int col) {
             RowData value = data.get(row);
-            return col == 0 ? value.getDate() : value.getRow();
+            return col == 0 ? value.getDate() : value.getValue().split(" ")[1];
         }
 
         public void addRow(RowData value) {
@@ -132,10 +150,12 @@ public class TestTableLoad01 {
 
         private Date date;
         private int row;
+        private String value;
 
         public RowData(int row) {
             this.date = new Date();
             this.row = row;
+            this.value = row + " " + String.valueOf(row + row);
         }
 
         public Date getDate() {
@@ -145,14 +165,29 @@ public class TestTableLoad01 {
         public int getRow() {
             return row;
         }
+
+        public String getValue() {
+            return value;
+        }
     }
 
     public class TableSwingWorker extends SwingWorker<MyTableModel, RowData> {
 
+        public interface Listener {
+            void onCompleted();
+        }
+        Listener listener;
+        private ArrayList<RowData> datas;
+        private int count;
         private final MyTableModel tableModel;
 
-        public TableSwingWorker(MyTableModel tableModel) {
+        private JTable table;
+        public TableSwingWorker(JTable table, MyTableModel tableModel, ArrayList<RowData> datas, Listener listener) {
+            this.table = table;
+            this.datas = datas;
+            this.count = datas.size();
             this.tableModel = tableModel;
+            this.listener = listener;
         }
 
         @Override
@@ -160,13 +195,10 @@ public class TestTableLoad01 {
 
             // This is a deliberate pause to allow the UI time to render
             Thread.sleep(1000);
-
             System.out.println("Start polulating");
 
-            for (int index = 0; index < 1000000; index++) {
-
-                RowData data = new RowData(index);
-                publish(data);
+            for(int i = 0; i < datas.size(); i++){
+                publish(datas.get(i));
                 Thread.yield();
             }
             return tableModel;
@@ -174,8 +206,14 @@ public class TestTableLoad01 {
 
         @Override
         protected void process(List<RowData> chunks) {
-            System.out.println("Adding " + chunks.size() + " rows");
+            count -= chunks.size();
+            Runtime r = Runtime.getRuntime();
+            L.d("free = " + r.freeMemory());
+            System.out.println(" - Adding (" + chunks.size() + " / " + count + ") rows" + " " + r.totalMemory() / 1000 / 1000 + " MB");
             tableModel.addRows(chunks);
+            table.changeSelection(tableModel.getRowCount() - 1, 0, false, false);
+            if (count <= 0)
+                listener.onCompleted();
         }
     }
 }
