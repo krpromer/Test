@@ -3,10 +3,8 @@ package Newer.Table.Model;
 import Newer.Table.Data.Item;
 import Newer.Table.Data.Record;
 import Newer.Table.Data.Table;
-import Newer.Table.L;
 
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumnModel;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -14,10 +12,10 @@ import java.util.Iterator;
 public class FieldTableModel extends AbstractTableModel {
 
     private Table table;
-    private TableColumnModel tableColumnModel;
+    private FieldTableColumnModel tableColumnModel;
 
     /* Options */
-    private boolean isAutoHeader;
+    private boolean isAutoHeader; // add all headers;
 
     public FieldTableModel(Table table){
         this.table = table;
@@ -33,8 +31,7 @@ public class FieldTableModel extends AbstractTableModel {
     }
 
     private void initHeader(){
-        tableColumnModel = new DefaultTableColumnModel();
-
+        tableColumnModel = new FieldTableColumnModel();
         HashSet<Integer> headers = new HashSet<>();
         if (isAutoHeader) {
             for (Record record : table.getRecordlist()) {
@@ -43,14 +40,12 @@ public class FieldTableModel extends AbstractTableModel {
                 }
             }
             Iterator<Integer> it = headers.iterator();
-            int modelIdx = 0;
             while (it.hasNext()) {
-                FieldTableColumn column = new FieldTableColumn(modelIdx++, it.next());
-                column.setHeaderValue("Test");
-                tableColumnModel.addColumn(column);
-
-                L.d(column);
+                tableColumnModel.addColumn(it.next());
             }
+        }else{
+            for(Integer field : table.getHeaderFieldList())
+                tableColumnModel.addColumn(field);
         }
     }
     public TableColumnModel getTableColumnModel() {
@@ -68,15 +63,9 @@ public class FieldTableModel extends AbstractTableModel {
     }
 
     @Override
-    public String getColumnName(int column) {
-        return "Test";
-    }
-
-    @Override
     public Object getValueAt(int rowIdx, int colIdx) {
-        FieldTableColumn column = (FieldTableColumn) tableColumnModel.getColumn(colIdx);
+        FieldTableColumn column = tableColumnModel.getColumn(colIdx);
         int field = column.getField();
-        L.d("col =" + colIdx + " field =" + field);
         return table.getRecord(rowIdx).getItemByField(field).getStr();
     }
 

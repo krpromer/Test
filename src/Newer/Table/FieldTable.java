@@ -4,12 +4,12 @@ import Newer.Table.Data.Table;
 import Newer.Table.Model.FieldTableModel;
 
 import javax.swing.*;
-import javax.swing.table.JTableHeader;
+import java.awt.*;
 
 public class FieldTable extends JTable{
 
     private Table table;
-    private FieldTableModel keyTableModel;
+    private FieldTableModel fieldTableModel;
 
     public FieldTable(Table table){
         this.table = table;
@@ -17,8 +17,17 @@ public class FieldTable extends JTable{
     }
 
     private void initGui(){
-        keyTableModel = new FieldTableModel(table);
-        setFieldTableModel(keyTableModel);
+        fieldTableModel = new FieldTableModel(table);
+        setFieldTableModel(fieldTableModel);
+
+
+        setOpaque(true);
+        setIntercellSpacing(new Dimension(0, 0));
+        setDoubleBuffered(true);
+        setIgnoreRepaint(true);
+        setShowGrid(false);
+        setAutoResizeMode(AUTO_RESIZE_OFF);
+        setRowSelectionAllowed(true);
     }
 
     private void setFieldTableModel(FieldTableModel keyTableModel){

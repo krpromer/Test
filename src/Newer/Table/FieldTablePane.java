@@ -10,7 +10,7 @@ import java.awt.*;
 public class FieldTablePane extends JPanel{
 
     JScrollPane jScrollPane;
-    FieldTable keyTable;
+    FieldTable fieldTable;
 
     public static FieldTablePane getInstance(){
         return new FieldTablePane();
@@ -24,17 +24,17 @@ public class FieldTablePane extends JPanel{
         setLayout(new BorderLayout());
 
         Table table = new Table();
-        Record record = new Record();
-        record.add(new Item(Field.FRAME, 1), new Item(Field.TEST, "Test"));
-        table.add(record);
 
-        Record record2 = new Record();
-        record2.add(new Item(Field.FRAME, 4), new Item(Field.TEST, "Test2"));
-        table.add(record2);
+        for(int i = 0; i < 100; i++){
+            Record record = new Record();
+            record.add(new Item(Field.FRAME, i), new Item(Field.TEST, "Test" + i));
+            table.add(record);
+        }
 
-        keyTable = new FieldTable(table);
-        jScrollPane = new JScrollPane(keyTable);
-        add(keyTable, BorderLayout.CENTER);
+
+        fieldTable = new FieldTable(table);
+        jScrollPane = new JScrollPane(fieldTable);
+        add(jScrollPane, BorderLayout.CENTER);
 
     }
 }
